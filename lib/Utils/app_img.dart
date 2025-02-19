@@ -1,0 +1,35 @@
+class AppImage {
+  static String bgImg = "assets/images/background image.png";
+  static String profileImg = "assets/images/profile foto.png";
+  static String house = "assets/images/house.png";
+  static String townhouse = "assets/images/townhouse.png";
+  static String condo = "assets/images/condo.png";
+  static String multi = "assets/images/multi_family.png";
+  static String mob = "assets/images/mobile.png";
+  static String land = "assets/images/land.png";
+  static String kitchen = "assets/images/kitchen.png";
+  static String bathroom = "assets/images/bathroom.png";
+  static String bedroom = "assets/images/bedroom.png";
+  static String ceiling = "assets/images/ceiling height.png";
+  static String cul_de = "assets/images/cul de.png";
+  static String drive = "assets/images/drive way.png";
+  static String garage_size = "assets/images/garage size.png";
+  static String garage = "assets/images/garage.png";
+  static String good_view = "assets/images/good view.png";
+  static String Hao = "assets/images/HAO.png";
+  static String nearby = "assets/images/nearby school.png";
+  static String sq_ft = "assets/images/price sq foot.png";
+  static String price = "assets/images/price.png";
+  static String ranch = "assets/images/ranch style.png";
+  static String split = "assets/images/split level.png";
+  static String square_ft = "assets/images/square foot.png";
+  static String num_bathroom = "assets/images/total bathroom.png";
+  static String num_bedroom = "assets/images/total bedroom.png";
+  static String backyard = "assets/images/backyard.png";
+  static String fav3 = "assets/images/fav2.png";
+  static String victoria = "assets/images/victoria.png";
+  static String fav2 = "assets/images/fav4.png";
+  static String fav1 = "assets/images/fav5.png";
+  static String houseGreen = "assets/images/grenn house.png";
+  static String whiteWall = "assets/images/white ppr.png";
+}

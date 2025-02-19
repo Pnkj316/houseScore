@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "387421856766",
+    "project_id": "houszscore-75dcf",
+    "storage_bucket": "houszscore-75dcf.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:387421856766:android:65d3f092566139c2fc96af",
+        "android_client_info": {
+          "package_name": "com.example.houszscore"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "387421856766-t4imja5o5c0vcmdcrb09qb8fp07cj987.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBMTKMc16-TMRsCmnljpX_6xzlmyoTH14M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "387421856766-t4imja5o5c0vcmdcrb09qb8fp07cj987.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "387421856766-8f8viql8fn23vsjmgl7k0b0o1f1c3c4c.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.houszscore"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
