@@ -18,6 +18,11 @@ android {
         targetCompatibility = JavaVersion.VERSION_1_8
     }
 
+
+dependencies {
+    implementation 'com.stripe:stripe-android:20.20.0'  // Use latest version
+}
+
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_1_8
     }

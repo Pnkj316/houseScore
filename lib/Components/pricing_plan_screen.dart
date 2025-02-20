@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:houszscore/Utils/app_color.dart';
-import 'package:houszscore/Utils/app_icon.dart';
 import 'package:houszscore/Utils/text_style.dart';
 import 'package:houszscore/firebase.dart/firebase_services.dart';
 
@@ -32,11 +32,9 @@ class _PricingPlanScreenState extends State<PricingPlanScreen> {
 
       setState(() {
         _allPlans = plans;
-        _filterPlans(); // Filter plans after fetching
+        _filterPlans();
         _isLoading = false;
       });
-
-      print("Fetched Plans: $_allPlans"); // Debugging log
     } catch (e) {
       print("Error fetching subscription plans: $e");
       setState(() {
@@ -49,9 +47,71 @@ class _PricingPlanScreenState extends State<PricingPlanScreen> {
     setState(() {
       _filteredPlans = _allPlans
           .where((plan) =>
-              plan['billingCycle'] == (_isAnnual ? 'Per Year' : 'Per Month'))
+              (_isAnnual && plan['billingCycle'] == 'Annually') ||
+              (!_isAnnual && plan['billingCycle'] == 'Monthly'))
           .toList();
     });
+  }
+
+  Future<void> _handlePayment(double amount) async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      FirebaseService firebaseServices = FirebaseService();
+      String clientSecret = await firebaseServices.createPaymentIntent(amount);
+
+      print("Client Secret: $clientSecret");
+
+      await Stripe.instance.initPaymentSheet(
+        paymentSheetParameters: SetupPaymentSheetParameters(
+          paymentIntentClientSecret: clientSecret,
+          merchantDisplayName: "Houszscore",
+        ),
+      );
+
+      await Stripe.instance.presentPaymentSheet();
+
+      var paymentResponse =
+          await Stripe.instance.retrievePaymentIntent(clientSecret);
+      print("Payment Response: $paymentResponse");
+
+      // Show success alert
+      _showAlertDialog("Success", "Your payment was successful!");
+    } on StripeException catch (e) {
+      print("StripeException: ${e.error.localizedMessage}");
+      _showAlertDialog(
+          "Payment Error", e.error.localizedMessage ?? "Unknown error");
+    } catch (e) {
+      print("General error during payment: $e");
+      _showAlertDialog("Error", "Something went wrong with the payment.");
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _showAlertDialog(String title, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(
+                "OK",
+                style: TextStyles.size14Weight500.copyWith(color: Colors.black),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -78,20 +138,22 @@ class _PricingPlanScreenState extends State<PricingPlanScreen> {
                 _buildToggleButton('Monthly', !_isAnnual, () {
                   setState(() {
                     _isAnnual = false;
-                    _filterPlans(); // Filter plans when toggling
+                    _filterPlans();
                   });
                 }),
                 SizedBox(width: 20),
                 _buildToggleButton('Annually', _isAnnual, () {
                   setState(() {
                     _isAnnual = true;
-                    _filterPlans(); // Filter plans when toggling
+                    _filterPlans();
                   });
                 }),
               ],
             ),
             SizedBox(height: 20),
-            Text('Save on annual plans', style: TextStyles.size14Weight500),
+            Text('Save on annual plans',
+                style:
+                    TextStyles.size16Weight400.copyWith(color: AppColor.grey)),
             SizedBox(height: 20),
             _isLoading
                 ? Center(child: CircularProgressIndicator(color: Colors.black))
@@ -115,6 +177,49 @@ class _PricingPlanScreenState extends State<PricingPlanScreen> {
                             },
                           ),
                   ),
+            Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16.0),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black,
+                      foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    onPressed: _isLoading || _selectedPlanId == null
+                        ? null
+                        : () {
+                            final selectedPlan = _filteredPlans.firstWhere(
+                              (plan) => plan['name'] == _selectedPlanId,
+                              orElse: () => <String, dynamic>{'price': 0.0},
+                            );
+
+                            double amount =
+                                (selectedPlan['price'] as num?)?.toDouble() ??
+                                    0.0;
+
+                            if (amount >= 0.5) {
+                              _handlePayment(amount);
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                    content: Text(
+                                        'Amount must be at least \$0.50 for USD.')),
+                              );
+                            }
+                          },
+                    child: _isLoading
+                        ? CircularProgressIndicator(color: Colors.white)
+                        : Text(
+                            'Subscribe',
+                            style: TextStyles.size16Weight600,
+                          ),
+                  ),
+                ))
           ],
         ),
       ),
@@ -135,7 +240,7 @@ class _PricingPlanScreenState extends State<PricingPlanScreen> {
 
   Widget _buildPlanCard({
     required String name,
-    required String price,
+    required int price,
     required String billingCycle,
     required String description,
     required List<String> benefits,
@@ -157,7 +262,7 @@ class _PricingPlanScreenState extends State<PricingPlanScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(name, style: TextStyles.size14Weight600),
+                Text(name, style: TextStyles.size20Weight700),
                 Checkbox(
                   side: BorderSide(color: AppColor.grey),
                   checkColor: Colors.white,
@@ -173,33 +278,36 @@ class _PricingPlanScreenState extends State<PricingPlanScreen> {
             ),
             Row(
               children: [
-                Text('$price USD', style: TextStyles.size20Weight700),
+                Text('\$$price USD', style: TextStyles.size20Weight500),
                 Text(' $billingCycle',
-                    style: TextStyles.size16Weight700
+                    style: TextStyles.size18Weight600
                         .copyWith(color: AppColor.grey)),
               ],
             ),
-            SizedBox(
-              width: 310,
-              child: Text(
-                description,
-                style: TextStyles.size14Weight500
-                    .copyWith(color: Color(0xFF73776A)),
-              ),
-            ),
-            SizedBox(height: 10),
-            Text("Benefits:", style: TextStyles.size16Weight600),
-            ...benefits.map((benefit) {
-              return Row(
-                children: [
-                  Text("See benefits", style: TextStyles.size16Weight600),
-                  IconButton(
-                    onPressed: () {},
-                    icon: Image.asset(AppIcon.dwonArrow, scale: 4),
-                  ),
-                ],
-              );
-            }).toList(),
+            SizedBox(height: 5),
+            Text(description,
+                style:
+                    TextStyles.size14Weight500.copyWith(color: AppColor.grey)),
+            SizedBox(height: 5),
+            Row(
+              children: [
+                Text(
+                  'See Benefits',
+                  style: TextStyles.size18Weight700,
+                ),
+                DropdownButton<String>(
+                  dropdownColor: Colors.white,
+                  items: benefits.map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                  onChanged: (_) {},
+                  underline: SizedBox(),
+                ),
+              ],
+            )
           ],
         ),
       ),

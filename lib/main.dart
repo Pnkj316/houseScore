@@ -10,7 +10,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   Stripe.publishableKey =
-      "pk_test_51QrbiYKnDXOGJdEO1r3Tb6aTdwTaaEg04SKjtmJ11xxYxg4JCHtFJhfWDGX1g4K9DcejxvaDjkO01NBB0uolaqfB0070vN1iFH";
+      "pk_test_51PbxLARxwjoi20ObigElmnYg7T8rbt3NPy3krwPu5CNekMREcmh3uu4VJudYGg107TpzdF1fu0bEzO3FtNMyT00v008qMMh4Tb";
   runApp(ChangeNotifierProvider(
     create: (context) => UserProvider(),
     child: MyApp(),
