@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:houszscore/add_card_details.dart';
+import 'package:houszscore/Components/add_card_details.dart';
 import 'package:houszscore/Utils/app_color.dart';
 import 'package:houszscore/Utils/app_icon.dart';
 import 'package:houszscore/Utils/text_style.dart';

@@ -3,7 +3,6 @@ import 'package:houszscore/firebase.dart/firebase_services.dart';
 
 class FavoriteButton extends StatefulWidget {
   final String propertyId;
-  final String userId;
   final Map<String, dynamic> propertyData;
   final IconData favoriteIcon;
   final IconData notFavoriteIcon;
@@ -14,7 +13,6 @@ class FavoriteButton extends StatefulWidget {
     required this.propertyData,
     this.favoriteIcon = Icons.favorite,
     this.notFavoriteIcon = Icons.favorite_border,
-    required this.userId,
   }) : super(key: key);
 
   @override

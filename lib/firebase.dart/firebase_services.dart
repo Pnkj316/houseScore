@@ -195,7 +195,18 @@ class FirebaseService {
 
   Future<bool> isFavorite(String propertyId) async {
     if (currentUser == null) return false;
-    return _checkDocumentExists(_favoritesCollection, propertyId);
+
+    try {
+      final query = await _favoritesCollection
+          .where('propertyId', isEqualTo: propertyId)
+          .where('userId', isEqualTo: currentUser!.uid)
+          .get();
+
+      return query.docs.isNotEmpty;
+    } catch (e) {
+      print("Error checking if property is visited: $e");
+      return false;
+    }
   }
 
   //################### Suggestion List Functions ###########################

@@ -307,7 +307,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         SizedBox(width: 60.w),
                         FavoriteButton(
-                          userId: userId,
                           propertyId: data['propertyId'] ?? '',
                           propertyData: data,
                         ),

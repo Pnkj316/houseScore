@@ -225,18 +225,18 @@ class _SignInState extends State<SignInScreen> {
       label: "Sign In",
       isLoading: _isLoading,
       onTap: () {
+        setState(() {
+          _isLoading = true;
+        });
         if (_isEmailValid && _isPasswordValid) {
           _signInWithFirebase();
-          setState(() {
-            _isLoading = true;
-          });
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Please enter valid credentials')));
-          setState(() {
-            _isLoading = false;
-          });
         }
+        setState(() {
+          _isLoading = false;
+        });
       },
     );
   }
