@@ -21,6 +21,8 @@ android {
 
 dependencies {
     implementation 'com.stripe:stripe-android:20.20.0'  // Use latest version
+      implementation 'com.google.android.gms:play-services-auth:20.5.0'
+    implementation 'com.google.firebase:firebase-auth:22.0.0'
 }
 
     kotlinOptions {

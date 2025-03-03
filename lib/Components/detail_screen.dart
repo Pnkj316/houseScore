@@ -165,56 +165,71 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                     final userId =
                         Provider.of<UserProvider>(context, listen: false)
                             .userId;
+                    FirebaseService firebaseService = FirebaseService();
 
+                    // try {
+                    //   // Step 1: Fetch user's current plan limit
+                    //   // int currentPlanLimit =
+                    //   //     await firebaseService.getUserPlanLimit();
+                    //   // int visitedCount =
+                    //   //     await firebaseService.getVisitedPropertiesCount();
+
+                    //   // print("Visited Properties Count: $visitedCount");
+                    //   // print("Allowed Visits: $currentPlanLimit");
+
+                    //   // // Step 2: Check if user has reached the visit limit
+                    //   // if (visitedCount >= currentPlanLimit) {
+                    //   //   _showLimitReachedDialog(context);
+                    //   //   return;
+                    //   // }
+
+                    //   // Step 3: Proceed with visit logic
                     DateTime currentDate = DateTime.now();
                     String formattedDate =
                         DateFormat('d MMMM yyyy').format(currentDate);
 
-                    FirebaseService firebaseService = FirebaseService();
+                    bool exists = await firebaseService
+                        .isPropertyVisited(widget.propertyId);
 
-                    try {
-                      bool exists = await firebaseService
-                          .isPropertyVisited(widget.propertyId);
+                    if (exists) {
+                      final stream = firebaseService.getVisits();
+                      final existingDataList = await stream.first;
 
-                      if (exists) {
-                        final stream = firebaseService.getVisits();
-                        final existingDataList = await stream.first;
-
-                        if (existingDataList.isNotEmpty) {
-                          VisitingData visitingData =
-                              VisitingData.fromJson(existingDataList.first);
-
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => Visiting1Screen(
-                                userId: visitingData.userId,
-                                isUpdated: true,
-                                propertyId: visitingData.propertyId,
-                                rating: visitingData.propertyRating,
-                                image: visitingData.image,
-                                address: visitingData.address,
-                                name: visitingData.name,
-                                visitDate: visitingData.visitDate,
-                                visitingData: visitingData,
-                              ),
+                      if (existingDataList.isNotEmpty) {
+                        VisitingData visitingData =
+                            VisitingData.fromJson(existingDataList.first);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => Visiting1Screen(
+                              userId: visitingData.userId,
+                              isUpdated: true,
+                              propertyId: visitingData.propertyId,
+                              rating: visitingData.propertyRating,
+                              image: visitingData.image,
+                              address: visitingData.address,
+                              name: visitingData.name,
+                              visitDate: visitingData.visitDate,
+                              visitingData: visitingData,
                             ),
-                          );
-                        }
-                      } else {
-                        VisitingData newVisitingData = VisitingData(
-                          propertyId: widget.propertyId,
-                          userId: userId,
-                          image: widget.image,
-                          address: widget.address,
-                          name: widget.name,
-                          visitDate: formattedDate,
-                          propertyRating: _ratings,
+                          ),
                         );
+                      }
+                    } else {
+                      VisitingData newVisitingData = VisitingData(
+                        propertyId: widget.propertyId,
+                        userId: userId,
+                        image: widget.image,
+                        address: widget.address,
+                        name: widget.name,
+                        visitDate: formattedDate,
+                        propertyRating: _ratings,
+                      );
 
-                        await firebaseService
-                            .uploadVisitingData(newVisitingData);
+                      bool uploadSuccess = await firebaseService
+                          .uploadVisitingData(newVisitingData, context);
 
+                      if (uploadSuccess) {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -231,15 +246,23 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                             ),
                           ),
                         );
-                      }
-                    } catch (e) {
-                      print("Error handling visit: $e");
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
                             content:
-                                Text("An error occurred. Please try again.")),
-                      );
+                                Text("An error occurred. Please try again."),
+                          ),
+                        );
+                      }
                     }
+                    // } catch (e) {
+                    //   print("Error handling visit: $e");
+                    //   ScaffoldMessenger.of(context).showSnackBar(
+                    //     SnackBar(
+                    //         content:
+                    //             Text("An error occurred. Please try again.")),
+                    //   );
+                    // }
                   },
                   icon: const CircleAvatar(
                     radius: 15,
@@ -247,7 +270,7 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                     child:
                         Icon(Icons.camera_alt, color: Colors.white, size: 16),
                   ),
-                ),
+                )
               ],
             ),
     );

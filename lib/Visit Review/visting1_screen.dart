@@ -374,7 +374,7 @@ class _Visiting1ScreenState extends State<Visiting1Screen> {
           );
         }
       } else {
-        await firebaseService.uploadVisitingData(visitingData);
+        await firebaseService.uploadVisitingData(visitingData, context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Visiting data uploaded successfully!')),
         );

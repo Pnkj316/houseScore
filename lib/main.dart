@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:houszscore/BottomNavBar/Provider/userid_provider.dart';
+import 'package:houszscore/Components/pricing_plan_screen.dart';
 import 'package:houszscore/Login/login_1.dart';
 import 'package:provider/provider.dart';
 
@@ -26,6 +27,9 @@ class MyApp extends StatelessWidget {
         designSize: const Size(375, 812),
         builder: (context, child) {
           return MaterialApp(
+            routes: {
+              '/pricingScreen': (context) => PricingPlanScreen(),
+            },
             debugShowCheckedModeBanner: false,
             theme: ThemeData(
                 scaffoldBackgroundColor: Colors.white,

@@ -6,8 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:houszscore/Utils/app_icon.dart';
 import 'package:houszscore/Utils/text_style.dart';
 import 'package:houszscore/modal/initialize_screen_data.dart';
-import 'package:houszscore/payment_method_screen.dart';
-import 'package:houszscore/preference_questions.dart';
+import 'package:houszscore/Components/preference_questions.dart';
 
 class SettingsScreen extends StatelessWidget {
   @override
@@ -35,9 +34,9 @@ class SettingsScreen extends StatelessWidget {
               SizedBox(height: 10),
               _buildSection(context, userId, _settingsOptions.sublist(0, 5)),
               SizedBox(height: 10),
-              _buildSection(context, userId, _settingsOptions.sublist(5, 8)),
+              _buildSection(context, userId, _settingsOptions.sublist(5, 7)),
               SizedBox(height: 10),
-              _buildSection(context, userId, _settingsOptions.sublist(8, 9)),
+              _buildSection(context, userId, _settingsOptions.sublist(7, 8)),
               Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -113,19 +112,6 @@ class SettingsScreen extends StatelessWidget {
             ),
           );
         }
-      },
-      {
-        'icon': AppIcon.card,
-        'title': 'Payment methods',
-        'onTap': (
-          BuildContext context,
-        ) =>
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => PaymentMethodsScreen(),
-              ),
-            )
       },
       {'icon': AppIcon.payment, 'title': 'Your payments', 'onTap': null},
       {'icon': AppIcon.noti, 'title': 'Notifications', 'onTap': null},

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:houszscore/Utils/app_color.dart';
 import 'package:houszscore/Utils/app_img.dart';
-import 'package:houszscore/detail_screen.dart';
+import 'package:houszscore/Components/detail_screen.dart';
 import 'package:houszscore/firebase.dart/firebase_services.dart';
 
 class VictoriaAgentWidget extends StatelessWidget {

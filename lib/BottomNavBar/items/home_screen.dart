@@ -7,7 +7,7 @@ import 'package:houszscore/Components/star_score.dart';
 import 'package:houszscore/Utils/app_color.dart';
 import 'package:houszscore/Utils/text_style.dart';
 import 'package:houszscore/Visit%20Review/visting1_screen.dart';
-import 'package:houszscore/detail_screen.dart';
+import 'package:houszscore/Components/detail_screen.dart';
 import 'package:houszscore/firebase.dart/firebase_services.dart';
 import 'package:houszscore/modal/visting_modal.dart';
 import 'package:provider/provider.dart';

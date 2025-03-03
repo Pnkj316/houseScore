@@ -224,19 +224,29 @@ class _SignInState extends State<SignInScreen> {
       width: double.infinity,
       label: "Sign In",
       isLoading: _isLoading,
-      onTap: () {
+      onTap: () async {
+        if (!_isEmailValid || !_isPasswordValid) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Please enter valid credentials')),
+          );
+          return;
+        }
+
         setState(() {
           _isLoading = true;
         });
-        if (_isEmailValid && _isPasswordValid) {
-          _signInWithFirebase();
-        } else {
+
+        try {
+          await _signInWithFirebase();
+        } catch (e) {
           ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Please enter valid credentials')));
+            SnackBar(content: Text('Sign-in failed: $e')),
+          );
+        } finally {
+          setState(() {
+            _isLoading = false;
+          });
         }
-        setState(() {
-          _isLoading = false;
-        });
       },
     );
   }

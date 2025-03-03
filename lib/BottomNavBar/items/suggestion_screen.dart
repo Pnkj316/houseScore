@@ -5,7 +5,7 @@ import 'package:houszscore/BottomNavBar/Provider/userid_provider.dart';
 import 'package:houszscore/Components/property_item.dart';
 import 'package:houszscore/Components/strem_loader.dart';
 import 'package:houszscore/Components/toggle_button.dart';
-import 'package:houszscore/detail_screen.dart';
+import 'package:houszscore/Components/detail_screen.dart';
 import 'package:houszscore/firebase.dart/firebase_services.dart';
 import 'package:provider/provider.dart';
 

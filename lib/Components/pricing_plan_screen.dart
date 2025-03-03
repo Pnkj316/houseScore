@@ -12,7 +12,7 @@ class PricingPlanScreen extends StatefulWidget {
 }
 
 class _PricingPlanScreenState extends State<PricingPlanScreen> {
-  String? _selectedPlanId;
+  int? _selectedPlanId;
   List<Map<String, dynamic>> _allPlans = [];
   List<Map<String, dynamic>> _filteredPlans = [];
   bool _isLoading = true;
@@ -62,8 +62,6 @@ class _PricingPlanScreenState extends State<PricingPlanScreen> {
       FirebaseService firebaseServices = FirebaseService();
       String clientSecret = await firebaseServices.createPaymentIntent(amount);
 
-      print("Client Secret: $clientSecret");
-
       await Stripe.instance.initPaymentSheet(
         paymentSheetParameters: SetupPaymentSheetParameters(
           paymentIntentClientSecret: clientSecret,
@@ -77,7 +75,35 @@ class _PricingPlanScreenState extends State<PricingPlanScreen> {
           await Stripe.instance.retrievePaymentIntent(clientSecret);
       print("Payment Response: $paymentResponse");
 
-      // Show success alert
+      String transactionId = paymentResponse.id;
+
+      if (transactionId.isEmpty) {
+        throw Exception("Transaction ID not found!");
+      }
+
+      final selectedPlan = _filteredPlans.firstWhere(
+        (plan) => plan['planId'] == _selectedPlanId,
+        orElse: () => {},
+      );
+
+      if (selectedPlan.isEmpty) {
+        print("Error: No plan found for ID $_selectedPlanId");
+        return;
+      }
+
+      int duration = selectedPlan['duration'] ?? 0;
+      int planId = selectedPlan['planId'] ?? 0;
+      int allowedVisit = selectedPlan['prop'] ?? 0;
+      bool isSubscribed = true;
+      await firebaseServices.subscriptionStatus(
+        allowedVisit: allowedVisit,
+        transactionId: transactionId,
+        planId: planId,
+        isSubscribed: isSubscribed,
+        durationInDays: duration,
+      );
+
+      Navigator.pop(context);
       _showAlertDialog("Success", "Your payment was successful!");
     } on StripeException catch (e) {
       print("StripeException: ${e.error.localizedMessage}");
@@ -98,6 +124,7 @@ class _PricingPlanScreenState extends State<PricingPlanScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
+          backgroundColor: Colors.white,
           title: Text(title),
           content: Text(message),
           actions: [
@@ -167,6 +194,7 @@ class _PricingPlanScreenState extends State<PricingPlanScreen> {
                             itemBuilder: (context, index) {
                               var plan = _filteredPlans[index];
                               return _buildPlanCard(
+                                planId: plan["planId"] ?? '',
                                 name: plan['name'] ?? '',
                                 price: plan['price'] ?? '',
                                 billingCycle: plan['billingCycle'] ?? '',
@@ -194,10 +222,9 @@ class _PricingPlanScreenState extends State<PricingPlanScreen> {
                         ? null
                         : () {
                             final selectedPlan = _filteredPlans.firstWhere(
-                              (plan) => plan['name'] == _selectedPlanId,
+                              (plan) => plan['planId'] == _selectedPlanId,
                               orElse: () => <String, dynamic>{'price': 0.0},
                             );
-
                             double amount =
                                 (selectedPlan['price'] as num?)?.toDouble() ??
                                     0.0;
@@ -239,6 +266,7 @@ class _PricingPlanScreenState extends State<PricingPlanScreen> {
   }
 
   Widget _buildPlanCard({
+    required int planId,
     required String name,
     required int price,
     required String billingCycle,
@@ -250,7 +278,7 @@ class _PricingPlanScreenState extends State<PricingPlanScreen> {
       child: Container(
         decoration: BoxDecoration(
           border: Border.all(
-            color: _selectedPlanId == name ? AppColor.blue : AppColor.btnGrey,
+            color: _selectedPlanId == planId ? AppColor.blue : AppColor.btnGrey,
           ),
           borderRadius: BorderRadius.circular(20),
           color: Colors.white,
@@ -267,10 +295,10 @@ class _PricingPlanScreenState extends State<PricingPlanScreen> {
                   side: BorderSide(color: AppColor.grey),
                   checkColor: Colors.white,
                   activeColor: AppColor.blue,
-                  value: _selectedPlanId == name,
+                  value: _selectedPlanId == planId,
                   onChanged: (value) {
                     setState(() {
-                      _selectedPlanId = value == true ? name : null;
+                      _selectedPlanId = value == true ? planId : null;
                     });
                   },
                 ),
