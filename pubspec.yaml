@@ -52,6 +52,7 @@ dependencies:
   flutter_stripe: ^11.4.0
   cloud_functions: ^5.3.2
   http: ^0.13.6
+  intl: ^0.20.2
 
  
 

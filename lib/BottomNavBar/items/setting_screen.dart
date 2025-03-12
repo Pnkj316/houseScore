@@ -113,6 +113,13 @@ class SettingsScreen extends StatelessWidget {
           );
         }
       },
+      {
+        'icon': AppIcon.payment,
+        'title': 'Your Plans',
+        'onTap': (BuildContext context, String userId) {
+          Navigator.of(context).pushNamed("/plansScreen");
+        }
+      },
       {'icon': AppIcon.payment, 'title': 'Your payments', 'onTap': null},
       {'icon': AppIcon.noti, 'title': 'Notifications', 'onTap': null},
       {'icon': AppIcon.privacy, 'title': 'Privacy and sharing', 'onTap': null},

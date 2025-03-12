@@ -167,22 +167,6 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                             .userId;
                     FirebaseService firebaseService = FirebaseService();
 
-                    // try {
-                    //   // Step 1: Fetch user's current plan limit
-                    //   // int currentPlanLimit =
-                    //   //     await firebaseService.getUserPlanLimit();
-                    //   // int visitedCount =
-                    //   //     await firebaseService.getVisitedPropertiesCount();
-
-                    //   // print("Visited Properties Count: $visitedCount");
-                    //   // print("Allowed Visits: $currentPlanLimit");
-
-                    //   // // Step 2: Check if user has reached the visit limit
-                    //   // if (visitedCount >= currentPlanLimit) {
-                    //   //   _showLimitReachedDialog(context);
-                    //   //   return;
-                    //   // }
-
                     //   // Step 3: Proceed with visit logic
                     DateTime currentDate = DateTime.now();
                     String formattedDate =

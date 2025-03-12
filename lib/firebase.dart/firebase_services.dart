@@ -26,7 +26,7 @@ class FirebaseService {
       FirebaseFirestore.instance.collection('preferences');
   final CollectionReference _agentsCollection =
       FirebaseFirestore.instance.collection('property_agents');
-  final CollectionReference _subscriptionCollection =
+  final CollectionReference subscriptionCollection =
       FirebaseFirestore.instance.collection('subscription_plans');
 
   final CollectionReference _subscribedCollection =
@@ -162,6 +162,8 @@ class FirebaseService {
 
       // Step 2: Check if user has reached the visit limit
       if (visitedCount >= allowedVisits) {
+        _updateSubscriptionStatus(currentUser!.uid, subscriptionId);
+
         print("User has reached the maximum allowed property visits.");
 
         // Show pop-up
@@ -275,7 +277,7 @@ class FirebaseService {
   /// Fetch subscription plans from Firestore
   Future<List<Map<String, dynamic>>> getSubscriptionPlans() async {
     try {
-      QuerySnapshot querySnapshot = await _subscriptionCollection.get();
+      QuerySnapshot querySnapshot = await subscriptionCollection.get();
 
       List<Map<String, dynamic>> plans = querySnapshot.docs.map((doc) {
         final data = doc.data() as Map<String, dynamic>;
@@ -297,6 +299,22 @@ class FirebaseService {
     } catch (e) {
       print("Error fetching subscription plans: $e");
       return [];
+    }
+  }
+
+  Future<void> _updateSubscriptionStatus(
+      String userId, String subscriptionId) async {
+    try {
+      QuerySnapshot querySnapshot = await _subscribedCollection
+          .where('userId', isEqualTo: userId)
+          .where('subscriptionId', isEqualTo: subscriptionId)
+          .get();
+
+      for (QueryDocumentSnapshot doc in querySnapshot.docs) {
+        await doc.reference.update({'isSubscribed': false});
+      }
+    } catch (e) {
+      print("Error updating subscription status: $e");
     }
   }
 
@@ -368,7 +386,7 @@ class FirebaseService {
       // Fetch user's active subscription documents
       final userSubscriptionsSnapshot = await _subscribedCollection
           .where('userId', isEqualTo: currentUser!.uid)
-          // .orderBy('expiryDate', descending: true) // Sorting requires an index
+          .orderBy('expiryDate', descending: true)
           .get();
 
       if (userSubscriptionsSnapshot.docs.isEmpty) {
@@ -402,6 +420,31 @@ class FirebaseService {
         print("Error fetching allowed visits: $e");
       }
       return {"allowedVisits": 0, "subscriptionId": ""};
+    }
+  }
+
+  Stream<List<Map<String, dynamic>>> getUserSubscriptionsStream(String userId) {
+    return _subscribedCollection
+        .where('userId', isEqualTo: userId)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs
+          .map((doc) => doc.data() as Map<String, dynamic>)
+          .toList();
+    });
+  }
+
+  // Function to deactivate the subscription
+  Future<void> deactivateSubscription(String userId) async {
+    var querySnapshot = await _subscribedCollection
+        .where('userId', isEqualTo: userId)
+        .limit(1)
+        .get();
+
+    if (querySnapshot.docs.isNotEmpty) {
+      await querySnapshot.docs.first.reference.update({
+        'isSubscribed': false,
+      });
     }
   }
 
@@ -448,34 +491,34 @@ class FirebaseService {
     }
   }
 
-  Future<Map<String, dynamic>?> getCurrentUserPlan() async {
-    if (currentUser == null) return null;
+  // Future<Map<String, dynamic>?> getCurrentUserPlan() async {
+  //   if (currentUser == null) return null;
 
-    try {
-      final subsSnapshot = await _subscriptionCollection
-          .where('userId', isEqualTo: currentUser!.uid)
-          .where('isSubscribed', isEqualTo: true)
-          .orderBy('expiryDate', descending: true)
-          .limit(1)
-          .get();
+  //   try {
+  //     final subsSnapshot = await subscriptionCollection
+  //         .where('userId', isEqualTo: currentUser!.uid)
+  //         .where('isSubscribed', isEqualTo: true)
+  //         .orderBy('expiryDate', descending: true)
+  //         .limit(1)
+  //         .get();
 
-      if (subsSnapshot.docs.isEmpty) {
-        print("No active subscription found.");
-        return null;
-      }
+  //     if (subsSnapshot.docs.isEmpty) {
+  //       print("No active subscription found.");
+  //       return null;
+  //     }
 
-      // Extracting the first document (latest valid subscription)
-      Map<String, dynamic> currentPlan = {
-        'id': subsSnapshot.docs.first.id,
-        ...subsSnapshot.docs.first.data() as Map<String, dynamic>
-      };
+  //     // Extracting the first document (latest valid subscription)
+  //     Map<String, dynamic> currentPlan = {
+  //       'id': subsSnapshot.docs.first.id,
+  //       ...subsSnapshot.docs.first.data() as Map<String, dynamic>
+  //     };
 
-      return currentPlan;
-    } catch (e) {
-      print("Error fetching current user plan: $e");
-      return null;
-    }
-  }
+  //     return currentPlan;
+  //   } catch (e) {
+  //     print("Error fetching current user plan: $e");
+  //     return null;
+  //   }
+  // }
 
   void _showLimitReachedDialog(BuildContext context) {
     showDialog(
