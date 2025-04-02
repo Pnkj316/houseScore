@@ -1,0 +1,2 @@
+C:/Users/ASUS/Desktop/houszscore/android/app/.cxx/RelWithDebInfo/6q6f3r1l/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/ASUS/Desktop/houszscore/android/app/.cxx/RelWithDebInfo/6q6f3r1l/armeabi-v7a/CMakeFiles/rebuild_cache.dir

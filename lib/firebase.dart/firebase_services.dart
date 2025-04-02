@@ -491,34 +491,56 @@ class FirebaseService {
     }
   }
 
-  // Future<Map<String, dynamic>?> getCurrentUserPlan() async {
-  //   if (currentUser == null) return null;
+  Future<bool> hasRemainingVisits() async {
+    if (currentUser == null) return false;
 
-  //   try {
-  //     final subsSnapshot = await subscriptionCollection
-  //         .where('userId', isEqualTo: currentUser!.uid)
-  //         .where('isSubscribed', isEqualTo: true)
-  //         .orderBy('expiryDate', descending: true)
-  //         .limit(1)
-  //         .get();
+    try {
+      // 1. Get ACTIVE subscription (non-expired and isSubscribed: true)
+      final activeSubs = await _subscribedCollection
+          .where('userId', isEqualTo: currentUser!.uid)
+          .where('isSubscribed', isEqualTo: true)
+          .orderBy('expiryDate', descending: true)
+          .limit(1)
+          .get();
 
-  //     if (subsSnapshot.docs.isEmpty) {
-  //       print("No active subscription found.");
-  //       return null;
-  //     }
+      if (activeSubs.docs.isEmpty) {
+        print("No active subscription found");
+        return false;
+      }
 
-  //     // Extracting the first document (latest valid subscription)
-  //     Map<String, dynamic> currentPlan = {
-  //       'id': subsSnapshot.docs.first.id,
-  //       ...subsSnapshot.docs.first.data() as Map<String, dynamic>
-  //     };
+      final currentPlan = activeSubs.docs.first.data() as Map<String, dynamic>;
+      final planId = currentPlan['planId'];
+      final subscriptionId = currentPlan['subscriptionId'];
+      final allowedVisits = currentPlan['allowedvisits'] as int? ?? 0;
 
-  //     return currentPlan;
-  //   } catch (e) {
-  //     print("Error fetching current user plan: $e");
-  //     return null;
-  //   }
-  // }
+      // 2. Verify plan hasn't expired
+      final expiryDate = (currentPlan['expiryDate'] as Timestamp).toDate();
+      if (expiryDate.isBefore(DateTime.now())) {
+        print("Plan expired on ${expiryDate.toString()}");
+        await activeSubs.docs.first.reference.update({'isSubscribed': false});
+        return false;
+      }
+
+      // 3. Count visits under THIS subscription only
+      final visitsUsed = await _visitingCollection
+          .where('userId', isEqualTo: currentUser!.uid)
+          .where('subscriptionId', isEqualTo: subscriptionId)
+          .get()
+          .then((snapshot) => snapshot.size);
+
+      print('''
+    Plan ID: $planId
+    Allowed: $allowedVisits visits
+    Used: $visitsUsed visits
+    Remaining: ${allowedVisits - visitsUsed} visits
+    ''');
+
+      return visitsUsed < allowedVisits;
+    } catch (e) {
+      print("Subscription validation error: $e");
+      return false;
+    }
+  }
 
   void _showLimitReachedDialog(BuildContext context) {
     showDialog(

@@ -123,6 +123,45 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
     );
   }
 
+  void _showLimitReachedDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        title: const Text(
+          "Limit Reached",
+          style: TextStyle(color: AppColor.darkGrey),
+        ),
+        content: const Text(
+          "You have reached your property visit limit. Please upgrade your plan to continue.",
+          style: TextStyle(color: AppColor.grey),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              "Cancel",
+              style: TextStyle(color: AppColor.darkGrey),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => PricingPlanScreen()),
+              );
+            },
+            child: const Text(
+              "Upgrade Plan",
+              style: TextStyle(color: AppColor.darkGrey),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget buildGreyContainer() {
     return Container(
       padding: _showRating ? const EdgeInsets.all(1) : const EdgeInsets.all(16),
@@ -152,22 +191,35 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                     });
                   },
                   action: 'BOOK A TOUR',
-                  onTapIcon: () => Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => PricingPlanScreen()),
-                  ),
+                  onTapIcon: () async {
+                    final canProceed =
+                        await FirebaseService().hasRemainingVisits();
+                    if (!canProceed) {
+                      _showLimitReachedDialog(context);
+                    } else {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => PricingPlanScreen()),
+                      );
+                    }
+                  },
                 ),
                 const Divider(height: 20),
                 buildRowWithAction(
                   text: 'RECORD THE VISIT',
                   onTapText: () async {
+                    final canProceed =
+                        await FirebaseService().hasRemainingVisits();
+                    if (!canProceed) {
+                      _showLimitReachedDialog(context);
+                      return;
+                    }
+
                     final userId =
                         Provider.of<UserProvider>(context, listen: false)
                             .userId;
                     FirebaseService firebaseService = FirebaseService();
-
-                    //   // Step 3: Proceed with visit logic
                     DateTime currentDate = DateTime.now();
                     String formattedDate =
                         DateFormat('d MMMM yyyy').format(currentDate);
@@ -232,21 +284,13 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                         );
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
+                          const SnackBar(
                             content:
                                 Text("An error occurred. Please try again."),
                           ),
                         );
                       }
                     }
-                    // } catch (e) {
-                    //   print("Error handling visit: $e");
-                    //   ScaffoldMessenger.of(context).showSnackBar(
-                    //     SnackBar(
-                    //         content:
-                    //             Text("An error occurred. Please try again.")),
-                    //   );
-                    // }
                   },
                   icon: const CircleAvatar(
                     radius: 15,
